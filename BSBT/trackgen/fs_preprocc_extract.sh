@@ -18,6 +18,7 @@ run_cmd() {
   eval "$cmd" &>> "$log_file"
 }
 
+
 if [ -z "$1" ]; then
   echo "Error: Input directory is required."
   echo "Usage: ./freesurfer_preprocess.sh <input_dir>"
@@ -74,13 +75,13 @@ output_dir="$input_directory"
 echo "Preprocessing DWI in dir: $input_directory" | tee -a "$log_file"
 
 # convert to MrTrix .mif format
-inpmif="$input_directory/input_dwi.mif"
+inpmif="${input_directory}/input_dwi.mif"
 run_cmd "mrconvert ${inp} ${inpmif} -fslgrad ${fbvec} ${fbval} -nthreads ${threads} -force"
 
 # Run mrinfo to populate header.json with MRtrix header information
 # create DWI info files
-header_json="$input_directory/header.json"
-volinfo_txt="$input_directory/volinfo.txt"
+header_json="${input_directory}/header.json"
+volinfo_txt="${input_directory}/volinfo.txt"
 run_cmd "touch ${header_json}"
 run_cmd "touch ${volinfo_txt}"
 run_cmd "mrinfo -json_all ${header_json} ${inpmif} -force"
@@ -102,17 +103,36 @@ run_cmd "dwiextract ${inpmif_resampled} - -bzero | mrmath - mean ${meanlowbmif} 
 run_cmd "mrconvert ${meanlowbmif} ${meanlowbnifti} -datatype float32 -force"
 
 # intermediate cleanup
-run_cmd "rm ${inpmif}"
-run_cmd "rm ${meanlowbmif}"
+rm ${inpmif}
+rm ${meanlowbmif}
 
 # run synthseg
 echo "Running SynthSeg on the mean_b0..."
-synthsegpth="$input_directory/synthseg_output"
+synthsegpth="${input_directory}/synthseg_output"
 run_cmd "mri_synthseg --i ${meanlowbnifti} --o ${synthsegpth} --threads ${threads}"
+synthsegvol="${input_directory}/synthseg_output/mean_b0_synthseg.nii.gz"
 
 # Run SynthSR to generate MPRage for brainstem subfield segmentation
 echo "Generating SynthSR MPRage..."
+run_cmd "mri_synthsr --i ${meanlowbnifti} --o ${input_directory} --threads ${threads}"
+lowbsynthsr="${input_directory}/mean_b0_synthsr.nii.gz" #SynthSR convention
 
+# Run brainstem subfield segmentation
+# this requires making a "fake" FS_subject directory with an "mri" folder
+# and T1.mgz, norm.mgz and aseg.mgz vols
+echo "Prepping FS directory for brainstem subfield segmentation..."
+fsmridir="${input_directory}/fs_subj_dir/mri"
+bssubfieldseg="${input_directory}/brainstem_subfields/brainstemSsLabels.FSvoxelSpace.mgz"
+mkdir -p $fsmridir
+mkdir -p "${input_directory}/brainstem_subfields"
+run_cmd "mri_convert ${lowbsynthsr} ${fsmridir}/T1.mgz -rl ${meanlowbnifti}"
+run_cmd "mri_convert ${synthsegvol} ${fsmridir}/aseg.mgz"
+cp ${fsmridir}/T1.mgz ${fsmridir}/norm.mgz
+
+echo "Running brainstem subfield segmentation..."
+bssubfieldseg="${input_directory}/brainstem_subfields/brainstemSsLabels.FSvoxelSpace.mgz" # tool convention
+run_cmd "segment_subregions brainstem --out-dir=${input_directory}/brainstem_subfields --cross ${input_directory}/fs_subj_dir --threads ${threads}"
+run_cmd "mri_convert ${bssubfieldseg} ${bssubfieldseg} -rl ${meanlowbnifti} -rt nearest -odt float"
 
 echo "done preprocessing!!"
 echo " "
