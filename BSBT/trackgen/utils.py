@@ -28,14 +28,13 @@ def get_header_resolution(dwi_json_path):
     return dw_head['spacing'][0]
 
 
-def write_volinfo(json_file_path, output_dir):
+def write_volinfo(json_file_path, volinfo_path):
     vox_resolution = get_header_resolution(json_file_path)
-    shell_count = count_shells(header_json_path)
+    shell_count = count_shells(json_file_path)
     single_shell = shell_count <= 2
 
     # Write results to volinfo.txt
-    volinfo_path = os.path.join(output_dir, "volinfo.txt")
     with open(volinfo_path, "w") as volinfo:
         volinfo.write(f"resolution: {vox_resolution} mm\n")
-        volinfo.write(f"number of shells: {shell_count} mm\n")
+        volinfo.write(f"number of shells: {shell_count-1}\n")
         volinfo.write(f"single_shell_mode: {single_shell}\n")

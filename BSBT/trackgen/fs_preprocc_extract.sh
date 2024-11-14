@@ -51,6 +51,7 @@ fbvec="$input_directory/bvecs.txt"
 
 header_json="$input_directory/header.json"
 volinfo_txt="$input_directory/volinfo.txt"
+run_cmd "touch ${volinfo_txt}"
 
 if [ ! -f "$inp" ]; then
   echo "Error: $inp not found. Please ensure it is in the specified directory."
@@ -69,8 +70,6 @@ fi
 
 # same for internal bs_trackgen commands
 output_dir="$input_directory"
-threads=1  # Default to 1 thread
-
 
 ###############################################################################
 #*************            PREPROCESSING COMMANDS                **************#
@@ -81,8 +80,11 @@ echo "Preprocessing DWI in dir: $input_directory" | tee -a "$log_file"
 # create DWI info files
 run_cmd "touch \"$header_json\" \"$volinfo_txt\""
 
+inpmif="$input_directory/input_dwi.mif"
+run_cmd "mrconvert ${inp} ${inpmif} -fslgrad ${fbvec} ${fbval} -nthreads ${threads} -force"
+
 # Run mrinfo to populate header.json with MRtrix header information
-run_cmd "mrinfo -json_all ${header_json} ${inp} -force"
+run_cmd "mrinfo -json_all ${header_json} ${inpmif} -force"
 
 # populate volinfo.txt
 run_cmd "python -c \"from utils import write_volinfo; write_volinfo('${header_json}','${volinfo_txt}')\""
