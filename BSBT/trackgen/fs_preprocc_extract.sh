@@ -49,10 +49,6 @@ inp="$input_directory/input_dwi.nii.gz"
 fbval="$input_directory/bvals.txt"
 fbvec="$input_directory/bvecs.txt"
 
-header_json="$input_directory/header.json"
-volinfo_txt="$input_directory/volinfo.txt"
-run_cmd "touch ${volinfo_txt}"
-
 if [ ! -f "$inp" ]; then
   echo "Error: $inp not found. Please ensure it is in the specified directory."
   exit 1
@@ -77,21 +73,46 @@ output_dir="$input_directory"
 
 echo "Preprocessing DWI in dir: $input_directory" | tee -a "$log_file"
 
-# create DWI info files
-run_cmd "touch \"$header_json\" \"$volinfo_txt\""
-
+# convert to MrTrix .mif format
 inpmif="$input_directory/input_dwi.mif"
 run_cmd "mrconvert ${inp} ${inpmif} -fslgrad ${fbvec} ${fbval} -nthreads ${threads} -force"
 
 # Run mrinfo to populate header.json with MRtrix header information
+# create DWI info files
+header_json="$input_directory/header.json"
+volinfo_txt="$input_directory/volinfo.txt"
+run_cmd "touch ${header_json}"
+run_cmd "touch ${volinfo_txt}"
 run_cmd "mrinfo -json_all ${header_json} ${inpmif} -force"
 
 # populate volinfo.txt
+echo "Extracting header info..."
 run_cmd "python -c \"from utils import write_volinfo; write_volinfo('${header_json}','${volinfo_txt}')\""
 
-
-# MRtrix processing steps
+# resample to 1mm isotropic
 echo "Regridding to 1mm..."
+inpmif_resampled="${input_directory}/input_dwi_1mm_resampled.mif"
+run_cmd "mrgrid ${inpmif} regrid -vox 1.0 ${inpmif_resampled} -nthreads ${threads} -force"
+
+# extract mean b0
+echo "Extracting mean b0..."
+meanlowbmif="${input_directory}/mean_b0.mif"
+meanlowbnifti="${input_directory}/mean_b0.nii.gz"
+run_cmd "dwiextract ${inpmif_resampled} - -bzero | mrmath - mean ${meanlowbmif} -axis 3 -force"
+run_cmd "mrconvert ${meanlowbmif} ${meanlowbnifti} -datatype float32 -force"
+
+# intermediate cleanup
+run_cmd "rm ${inpmif}"
+run_cmd "rm ${meanlowbmif}"
+
+# run synthseg
+echo "Running SynthSeg on the mean_b0..."
+synthsegpth="$input_directory/synthseg_output"
+run_cmd "mri_synthseg --i ${meanlowbnifti} --o ${synthsegpth} --threads ${threads}"
+
+# Run SynthSR to generate MPRage for brainstem subfield segmentation
+echo "Generating SynthSR MPRage..."
+
 
 echo "done preprocessing!!"
 echo " "
