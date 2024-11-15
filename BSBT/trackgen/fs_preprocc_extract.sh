@@ -202,6 +202,25 @@ run_cmd "python -c \"from utils import crop_around_centroid; crop_around_centroi
 run_cmd "python -c \"from utils import crop_around_centroid; crop_around_centroid('${faimg}','${fpons}','${facropped}')\""
 run_cmd "python -c \"from utils import crop_around_centroid; crop_around_centroid('${v1img}','${fpons}','${v1cropped}')\""
 
+# Apply dilation/erosion for peri-brainstem vols for better streamline seeding for PFM
+fDCmorphed="${input_directory}/DC_morphed.nii.gz"
+fcortmorphed="${input_directory}/cort_morphed.nii.gz"
+fthalmorphed="${input_directory}/thal_morphed.nii.gz"
+fCBmorphed="${input_directory}/CB_morphed.nii.gz"
+fmedullamorphed="${input_directory}/medulla_morphed.nii.gz"
+fponsmorphed="${input_directory}/pons_morphed.nii.gz"
+fDCboundary="${input_directory}/DC_boundary.nii.gz"
+morpho=3
+
+echo "Morphing peri-brainstem ROIs..."
+run_cmd "maskfilter ${fDC} dilate -npass 4 ${fDCmorphed} -force"
+run_cmd "maskfilter ${fcort} dilate -npass 5 ${fcortmorphed} -force"
+run_cmd "maskfilter ${fthal} dilate -npass 3 ${fthalmorphed} -force"
+run_cmd "maskfilter ${fCB} erode -npass 3 ${fCBmorphed} -force"
+run_cmd "maskfilter ${fmedulla} dilate -npass 2 ${fmedullamorphed} -force"
+run_cmd "maskfilter ${fpons} erode -npass 4 ${fponsmorphed} -force"
+run_cmd "mrcalc ${fDCmorphed} ${fcortmorphed} -mult ${fDCboundary} -force"
+
 echo "done preprocessing!!"
 echo " "
 echo " "
