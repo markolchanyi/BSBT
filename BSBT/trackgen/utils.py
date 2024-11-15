@@ -54,7 +54,8 @@ def extract_bin_roi(input_file, labels, output_file):
     data = img.get_fdata()
 
     labels_set = set(labels)  # Convert to set for faster lookup
-    binary_mask = np.isin(data, labels_set).astype(np.uint8)
+    print("labels set is: ", labels_set)
+    binary_mask = np.isin(data, labels_set).astype(int)
 
     binary_img = nib.Nifti1Image(binary_mask, affine=img.affine, header=img.header)
     nib.save(binary_img, output_file)
