@@ -91,24 +91,45 @@ echo "Extracting header info..."
 run_cmd "python -c \"from utils import write_volinfo; write_volinfo('${header_json}','${volinfo_txt}')\""
 
 # resample to 1mm isotropic
-echo "Regridding to 1mm..."
 inpmif_resampled="${input_directory}/input_dwi_1mm_resampled.mif"
+
+echo "Regridding to 1mm..."
 run_cmd "mrgrid ${inpmif} regrid -vox 1.0 ${inpmif_resampled} -nthreads ${threads} -force"
 
 # extract mean b0
-echo "Extracting mean b0..."
 meanlowbmif="${input_directory}/mean_b0.mif"
 meanlowbnifti="${input_directory}/mean_b0.nii.gz"
+
+echo "Extracting mean b0..."
 run_cmd "dwiextract ${inpmif_resampled} - -bzero | mrmath - mean ${meanlowbmif} -axis 3 -force"
 run_cmd "mrconvert ${meanlowbmif} ${meanlowbnifti} -datatype float32 -force"
 
+# Extract brain mask with FS SynthStrip
+meanlowbstripped="${input_directory}/mean_b0_masked.nii.gz"
+brainmask="${input_directory}/brain_mask.nii.gz"
+
+echo "Extracting brain mask..."
+run_cmd "mri_synthstrip -i ${meanlowbnifti} -o ${meanlowbstripped} -m ${brainmask}"
+
+# Fit tensor model to the DWI to extract relevent metrics
+echo "Tensor fitting and extracting FA/MD/V1..."
+tensorimg="${input_directory}/dwi_dt_1mm.mif"
+faimg="${input_directory}/fa_1mm.nii.gz"
+mdimg="${input_directory}/md_1mm.nii.gz"
+v1img="${input_directory}/v1_1mm.nii.gz"
+
+run_cmd "dwi2tensor ${inpmif_resampled} ${tensorimg} -nthreads ${threads} -force"
+run_cmd "tensor2metric ${tensorimg} -fa ${faimg} -adc ${mdimg} -vector ${v1img} -force"
+
 # intermediate cleanup
+rm ${tensorimg}
 rm ${inpmif}
 rm ${meanlowbmif}
 
 # run synthseg
-echo "Running SynthSeg on the mean_b0..."
 synthsegpth="${input_directory}/synthseg_output"
+
+echo "Running SynthSeg on the mean_b0..."
 run_cmd "mri_synthseg --i ${meanlowbnifti} --o ${synthsegpth} --threads ${threads}"
 synthsegvol="${input_directory}/synthseg_output/mean_b0_synthseg.nii.gz"
 
@@ -120,9 +141,10 @@ lowbsynthsr="${input_directory}/mean_b0_synthsr.nii.gz" #SynthSR convention
 # Run brainstem subfield segmentation
 # this requires making a "fake" FS_subject directory with an "mri" folder
 # and T1.mgz, norm.mgz and aseg.mgz vols
-echo "Prepping FS directory for brainstem subfield segmentation..."
 fsmridir="${input_directory}/fs_subj_dir/mri"
 bssubfieldseg="${input_directory}/brainstem_subfields/brainstemSsLabels.FSvoxelSpace.mgz"
+
+echo "Prepping FS directory for brainstem subfield segmentation..."
 mkdir -p $fsmridir
 mkdir -p "${input_directory}/brainstem_subfields"
 run_cmd "mri_convert ${lowbsynthsr} ${fsmridir}/T1.mgz -rl ${meanlowbnifti}"
@@ -130,9 +152,54 @@ run_cmd "mri_convert ${synthsegvol} ${fsmridir}/aseg.mgz"
 cp ${fsmridir}/T1.mgz ${fsmridir}/norm.mgz
 
 echo "Running brainstem subfield segmentation..."
-bssubfieldseg="${input_directory}/brainstem_subfields/brainstemSsLabels.FSvoxelSpace.mgz" # tool convention
 run_cmd "segment_subregions brainstem --out-dir=${input_directory}/brainstem_subfields --cross ${input_directory}/fs_subj_dir --threads ${threads}"
 run_cmd "mri_convert ${bssubfieldseg} ${bssubfieldseg} -rl ${meanlowbnifti} -rt nearest -odt float"
+
+# Extract SynthSeg ROIs to use for brainstem tract generation
+thallab="[10,49]"
+DClab="[28,60]"
+cortlab="[18,54]"
+CBlab="[7,46]"
+midbrainlab="[173]"
+ponslab="[174]"
+medullalab="[175]"
+brainstemlab="[16]"
+synthsegalllabs="[10,49,28,60,7,46,16]" # all SynthSeg extra-brainstem labels together
+
+fthal="${input_directory}/thal.nii.gz"
+fDC="${input_directory}/DC.nii.gz"
+fcort="${input_directory}/cort.nii.gz"
+fCB="${input_directory}/CB.nii.gz"
+fmidbrain="${input_directory}/midbrain.nii.gz"
+fpons="${input_directory}/pons.nii.gz"
+fmedulla="${input_directory}/medulla.nii.gz"
+fbrainstem="${input_directory}/brainstem.nii.gz"
+fsynthsegalllabs="${input_directory}/all_labels.nii.gz"
+
+echo "Extracting SynthSeg and Brainstem Subfield ROIs..."
+run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${thallab},${fthal})\""
+run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${DClab},${fDC})\""
+run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${cortlab},${fcort})\""
+run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${CBlab},${fCB})\""
+run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${brainstemlab},${fbrainstem})\""
+run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${synthsegalllabs},${fsynthsegalllabs})\""
+run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${bssubfieldseg}',${midbrainlab},${fmidbrain})\""
+run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${bssubfieldseg}',${ponslab},${fpons})\""
+run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${bssubfieldseg}',${medullalab},${fmedulla})\""
+
+# Get centroid voxel coordinates of union of thalamic and brainstem masks to obtain bounding box location
+# Crop all relevent DWI metrics (FOR CNN PREP)
+lowbcropped="${input_directory}/lowb_1mm_cropped.nii.gz"
+facropped="${input_directory}/fa_1mm_cropped.nii.gz"
+v1cropped="${input_directory}/v1_1mm_cropped_norm.nii.gz"
+cropsize=64
+
+
+echo "Cropping relevent DWI volumes..."
+run_cmd "mrcentroid -voxelspace ${fpons} > ${input_directory}/pontine_cntr_coords.txt"
+run_cmd "python -c \"from utils import crop_around_centroid; crop_around_centroid('${meanlowbnifti}','${fpons}','${lowbcropped}')\""
+run_cmd "python -c \"from utils import crop_around_centroid; crop_around_centroid('${faimg}','${fpons}','${facropped}')\""
+run_cmd "python -c \"from utils import crop_around_centroid; crop_around_centroid('${v1img}','${fpons}','${v1cropped}')\""
 
 echo "done preprocessing!!"
 echo " "
