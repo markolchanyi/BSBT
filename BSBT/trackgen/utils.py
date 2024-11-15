@@ -45,6 +45,22 @@ def write_volinfo(json_file_path, volinfo_path):
         volinfo.write(f"single_shell_mode: {single_shell}\n")
 
 
+def extract_bin_roi(input_file, labels, output_file):
+    '''
+    Extract an ROI from a segmentation volume.
+    '''
+
+    img = nib.load(input_file)
+    data = img.get_fdata()
+
+    labels_set = set(labels)  # Convert to set for faster lookup
+    binary_mask = np.isin(data, labels_set).astype(np.uint8)
+
+    binary_img = nib.Nifti1Image(binary_mask, affine=img.affine, header=img.header)
+    nib.save(binary_img, output_file)
+
+
+
 def crop_around_centroid(vol_path,mask_vol_path,output_path,crop_size=64):
     '''
     Crop a volume around the centroid of a binary lask
