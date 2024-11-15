@@ -16,6 +16,7 @@ run_cmd() {
   local cmd="$1"
   echo "$cmd" | tee -a "$log_file"
   eval "$cmd" &>> "$log_file"
+  echo " "
 }
 
 
