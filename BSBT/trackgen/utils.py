@@ -68,7 +68,7 @@ def crop_around_centroid(vol_path,mask_vol_path,output_path,crop_size=64):
     vol_img = nib.load(vol_path)
     vol = vol_img.get_fdata()
     affine = vol_img.affine
-    mas_vol_img = nib.load(mask_vol_path)
+    mask_vol_img = nib.load(mask_vol_path)
     mask_vol = mask_vol_img.get_fdata()
 
     COM = ndimage.measurements.center_of_mass(mask_vol)
