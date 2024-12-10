@@ -14,17 +14,17 @@
 #   4. <out>         - Path for intermed (optional; default: current working dir)
 #   5. <threads>     - Number of threads to use for MrTrix (optional; default: 1)
 
-if [ -f "$1" ] && [ -r "$1" ]; then
+if [ ! -f "$1" ]  || [ ! -r "$1" ]; then
   echo "Error: Input DWI does not exist or is not readable."
   echo "Usage: ./run_bsbt.sh <dwi> <bvals> <bvecs> <threads>"
   exit 1
 fi
-if [ -f "$2" ] && [ -r "$2" ]; then
+if [ ! -f "$2" ] || [ ! -r "$2" ]; then
   echo "Error: bvals does not exist or is not readable."
   echo "Usage: ./run_bsbt.sh <dwi> <bvals> <bvecs> <threads>"
   exit 1
 fi
-if [ -f "$3" ] && [ -r "$3" ]; then
+if [ ! -f "$3" ] || [ ! -r "$3" ]; then
   echo "Error: bvecs does not exist or is not readable."
   echo "Usage: ./run_bsbt.sh <dwi> <bvals> <bvecs> <threads>"
   exit 1
@@ -34,6 +34,8 @@ if [ -z "$4" ]; then
 else
   OUTPUT_DIR="$4"
 fi
+
+echo "Saving results to: ${OUTPUT_DIR}"
 
 # Ensure FS and MrTrix DEPENDENCIES found
 if [ -z "$FREESURFER_HOME" ]; then
@@ -51,7 +53,9 @@ fbvec="$3"
 THREADS="${5:-1}"  # Default to singgle thread
 
 # Dir for all intermediate files. To be deleted
-INTERDIR=$(mktemp -d $OUTPUT_DIR/XXXXXXX)
+TEMPNAME="temp_$(uuidgen | tr -d '-' | head -c 7)"
+INTERDIR=${OUTPUT_DIR}/${TEMPNAME}
+mkdir -p ${INTERDIR}
 echo "Created intermediate dir: ${INTERDIR}"
 echo "Moving relevent files to: ${INTERDIR}"
 
