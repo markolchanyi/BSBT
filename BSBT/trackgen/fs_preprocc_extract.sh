@@ -89,7 +89,7 @@ run_cmd "mrinfo -json_all ${header_json} ${inpmif} -force"
 
 # populate volinfo.txt
 echo "Extracting header info..."
-run_cmd "python -c \"from utils import write_volinfo; write_volinfo('${header_json}','${volinfo_txt}')\""
+run_cmd "python -c \"from trackgen.utils import write_volinfo; write_volinfo('${header_json}','${volinfo_txt}')\""
 
 # resample to 1mm isotropic
 inpmif_resampled="${input_directory}/input_dwi_1mm_resampled.mif"
@@ -178,15 +178,15 @@ fbrainstem="${input_directory}/brainstem.nii.gz"
 fsynthsegalllabs="${input_directory}/all_labels.nii.gz"
 
 echo "Extracting SynthSeg and Brainstem Subfield ROIs..."
-run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${thallab},'${fthal}')\""
-run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${DClab},'${fDC}')\""
-run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${cortlab},'${fcort}')\""
-run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${CBlab},'${fCB}')\""
-run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${brainstemlab},'${fbrainstem}')\""
-run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${synthsegalllabs},'${fsynthsegalllabs}')\""
-run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${bssubfieldseg}',${midbrainlab},'${fmidbrain}')\""
-run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${bssubfieldseg}',${ponslab},'${fpons}')\""
-run_cmd "python -c \"from utils import extract_bin_roi; extract_bin_roi('${bssubfieldseg}',${medullalab},'${fmedulla}')\""
+run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${thallab},'${fthal}')\""
+run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${DClab},'${fDC}')\""
+run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${cortlab},'${fcort}')\""
+run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${CBlab},'${fCB}')\""
+run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${brainstemlab},'${fbrainstem}')\""
+run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${synthsegalllabs},'${fsynthsegalllabs}')\""
+run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi('${bssubfieldseg}',${midbrainlab},'${fmidbrain}')\""
+run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi('${bssubfieldseg}',${ponslab},'${fpons}')\""
+run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi('${bssubfieldseg}',${medullalab},'${fmedulla}')\""
 
 # Get centroid voxel coordinates of union of thalamic and brainstem masks to obtain bounding box location
 # Crop all relevent DWI metrics (FOR CNN PREP)
@@ -198,9 +198,9 @@ cropsize=64
 
 echo "Cropping relevent DWI volumes..."
 run_cmd "mrcentroid -voxelspace ${fpons} > ${input_directory}/pontine_cntr_coords.txt"
-run_cmd "python -c \"from utils import crop_around_centroid; crop_around_centroid('${meanlowbnifti}','${fpons}','${lowbcropped}')\""
-run_cmd "python -c \"from utils import crop_around_centroid; crop_around_centroid('${faimg}','${fpons}','${facropped}')\""
-run_cmd "python -c \"from utils import crop_around_centroid; crop_around_centroid('${v1img}','${fpons}','${v1cropped}')\""
+run_cmd "python -c \"from trackgen.utils import crop_around_centroid; crop_around_centroid('${meanlowbnifti}','${fpons}','${lowbcropped}')\""
+run_cmd "python -c \"from trackgen.utils import crop_around_centroid; crop_around_centroid('${faimg}','${fpons}','${facropped}')\""
+run_cmd "python -c \"from trackgen.utils import crop_around_centroid; crop_around_centroid('${v1img}','${fpons}','${v1cropped}')\""
 
 # Apply dilation/erosion for peri-brainstem vols for better streamline seeding for PFM
 fDCmorphed="${input_directory}/DC_morphed.nii.gz"
