@@ -176,6 +176,7 @@ fpons="${input_directory}/pons.nii.gz"
 fmedulla="${input_directory}/medulla.nii.gz"
 fbrainstem="${input_directory}/brainstem.nii.gz"
 fsynthsegalllabs="${input_directory}/all_labels.nii.gz"
+ftractmask="${input_directory}/tractography_mask.nii.gz"
 
 echo "Extracting SynthSeg and Brainstem Subfield ROIs..."
 run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi('${synthsegvol}',${thallab},'${fthal}')\""
@@ -187,6 +188,9 @@ run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi
 run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi('${bssubfieldseg}',${midbrainlab},'${fmidbrain}')\""
 run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi('${bssubfieldseg}',${ponslab},'${fpons}')\""
 run_cmd "python -c \"from trackgen.utils import extract_bin_roi; extract_bin_roi('${bssubfieldseg}',${medullalab},'${fmedulla}')\""
+
+echo "Generating tractography mask from ${fsynthsegalllabs} and ${ftractmask}"
+run_cmd "python -c \"from trackgen.utils import tractography_mask; tractography_mask('${fsynthsegalllabs}','${ftractmask}')\""
 
 # Get centroid voxel coordinates of union of thalamic and brainstem masks to obtain bounding box location
 # Crop all relevent DWI metrics (FOR CNN PREP)

@@ -1,0 +1,166 @@
+nohup: ignoring input
+Saving results to: /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm
+Created intermediate dir: /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488
+Moving relevant files to: /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488
+sending incremental file list
+data.nii.gz
+
+sent 1,258,266,735 bytes  received 35 bytes  86,777,018.62 bytes/sec
+total size is 1,257,959,510  speedup is 1.00
+sending incremental file list
+bvals
+
+sent 1,452 bytes  received 35 bytes  2,974.00 bytes/sec
+total size is 1,343  speedup is 0.90
+sending incremental file list
+bvecs
+
+sent 9,616 bytes  received 35 bytes  19,302.00 bytes/sec
+total size is 9,507  speedup is 0.99
+^^^ log for intermediate files ^^^
+Preprocessing DWI in dir: /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488
+mrconvert /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/input_dwi.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/input_dwi.mif -fslgrad /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/bvecs.txt /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/bvals.txt -nthreads 60 -force
+ 
+touch /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/header.json
+ 
+touch /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/volinfo.txt
+ 
+mrinfo -json_all /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/header.json /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/input_dwi.mif -force
+ 
+Extracting header info...
+python -c "from trackgen.utils import write_volinfo; write_volinfo('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/header.json','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/volinfo.txt')"
+ 
+Regridding to 1mm...
+mrgrid /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/input_dwi.mif regrid -vox 1.0 /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/input_dwi_1mm_resampled.mif -nthreads 60 -force
+ 
+Extracting mean b0...
+dwiextract /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/input_dwi_1mm_resampled.mif - -bzero | mrmath - mean /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0.mif -axis 3 -force
+ 
+mrconvert /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0.mif /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0.nii.gz -datatype float32 -force
+ 
+Extracting brain mask...
+mri_synthstrip -i /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0.nii.gz -o /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0_masked.nii.gz -m /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/brain_mask.nii.gz
+ 
+Tensor fitting and extracting FA/MD/V1...
+dwi2tensor /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/input_dwi_1mm_resampled.mif /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/dwi_dt_1mm.mif -nthreads 60 -force
+ 
+tensor2metric /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/dwi_dt_1mm.mif -fa /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/fa_1mm.nii.gz -adc /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/md_1mm.nii.gz -vector /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/v1_1mm.nii.gz -force
+ 
+Running SynthSeg on the mean_b0...
+mri_synthseg --i /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0.nii.gz --o /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/synthseg_output --threads 60
+ 
+Generating SynthSR MPRage...
+mri_synthsr --i /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0.nii.gz --o /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488 --threads 60
+ 
+Prepping FS directory for brainstem subfield segmentation...
+mri_convert /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0_synthsr.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/fs_subj_dir/mri/T1.mgz -rl /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0.nii.gz
+ 
+mri_convert /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/synthseg_output/mean_b0_synthseg.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/fs_subj_dir/mri/aseg.mgz
+ 
+Running brainstem subfield segmentation...
+segment_subregions brainstem --out-dir=/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/brainstem_subfields --cross /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/fs_subj_dir --threads 60
+ 
+mri_convert /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/brainstem_subfields/brainstemSsLabels.FSvoxelSpace.mgz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/brainstem_subfields/brainstemSsLabels.FSvoxelSpace.mgz -rl /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0.nii.gz -rt nearest -odt float
+ 
+Extracting SynthSeg and Brainstem Subfield ROIs...
+python -c "from trackgen.utils import extract_bin_roi; extract_bin_roi('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/synthseg_output/mean_b0_synthseg.nii.gz',[10,49],'/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/thal.nii.gz')"
+ 
+python -c "from trackgen.utils import extract_bin_roi; extract_bin_roi('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/synthseg_output/mean_b0_synthseg.nii.gz',[28,60],'/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/DC.nii.gz')"
+ 
+python -c "from trackgen.utils import extract_bin_roi; extract_bin_roi('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/synthseg_output/mean_b0_synthseg.nii.gz',[18,54],'/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/cort.nii.gz')"
+ 
+python -c "from trackgen.utils import extract_bin_roi; extract_bin_roi('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/synthseg_output/mean_b0_synthseg.nii.gz',[7,46],'/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/CB.nii.gz')"
+ 
+python -c "from trackgen.utils import extract_bin_roi; extract_bin_roi('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/synthseg_output/mean_b0_synthseg.nii.gz',[16],'/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/brainstem.nii.gz')"
+ 
+python -c "from trackgen.utils import extract_bin_roi; extract_bin_roi('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/synthseg_output/mean_b0_synthseg.nii.gz',[10,49,28,60,7,46,16],'/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/all_labels.nii.gz')"
+ 
+python -c "from trackgen.utils import extract_bin_roi; extract_bin_roi('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/brainstem_subfields/brainstemSsLabels.FSvoxelSpace.mgz',[173],'/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/midbrain.nii.gz')"
+ 
+python -c "from trackgen.utils import extract_bin_roi; extract_bin_roi('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/brainstem_subfields/brainstemSsLabels.FSvoxelSpace.mgz',[174],'/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/pons.nii.gz')"
+ 
+python -c "from trackgen.utils import extract_bin_roi; extract_bin_roi('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/brainstem_subfields/brainstemSsLabels.FSvoxelSpace.mgz',[175],'/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/medulla.nii.gz')"
+ 
+Generating tractography mask from /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/all_labels.nii.gz and /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tractography_mask.nii.gz
+python -c "from trackgen.utils import tractography_mask; tractography_mask('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/all_labels.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tractography_mask.nii.gz')"
+ 
+Cropping relevent DWI volumes...
+mrcentroid -voxelspace /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/pons.nii.gz > /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/pontine_cntr_coords.txt
+ 
+python -c "from trackgen.utils import crop_around_centroid; crop_around_centroid('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/pons.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/lowb_1mm_cropped.nii.gz')"
+ 
+python -c "from trackgen.utils import crop_around_centroid; crop_around_centroid('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/fa_1mm.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/pons.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/fa_1mm_cropped.nii.gz')"
+ 
+python -c "from trackgen.utils import crop_around_centroid; crop_around_centroid('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/v1_1mm.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/pons.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/v1_1mm_cropped_norm.nii.gz')"
+ 
+Morphing peri-brainstem ROIs...
+maskfilter /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/DC.nii.gz dilate -npass 4 /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/DC_morphed.nii.gz -force
+ 
+maskfilter /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/cort.nii.gz dilate -npass 5 /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/cort_morphed.nii.gz -force
+ 
+maskfilter /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/thal.nii.gz dilate -npass 3 /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/thal_morphed.nii.gz -force
+ 
+maskfilter /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/CB.nii.gz erode -npass 3 /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/CB_morphed.nii.gz -force
+ 
+maskfilter /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/medulla.nii.gz dilate -npass 2 /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/medulla_morphed.nii.gz -force
+ 
+maskfilter /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/pons.nii.gz erode -npass 4 /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/pons_morphed.nii.gz -force
+ 
+mrcalc /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/DC_morphed.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/cort_morphed.nii.gz -mult /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/DC_boundary.nii.gz -force
+ 
+done preprocessing!!
+ 
+ 
+SINGLE_SHELL_MODE is set to: False
+Estimating response function(s) and calculating ODFs...
+dwi2response dhollander /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/input_dwi_1mm_resampled.mif /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/wm.txt /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/gm.txt /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/csf.txt -nthreads 60 -force
+ 
+dwi2fod msmt_csd /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/input_dwi_1mm_resampled.mif -mask /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/brain_mask.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/wm.txt /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/wmfod.mif /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/gm.txt /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/gmfod.mif /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/csf.txt /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/csffod.mif -nthreads 60 -force
+ 
+done
+Normalizing ODFs...
+mtnormalise /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/wmfod.mif /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/wmfod_norm.mif /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/gmfod.mif /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/gmfod_norm.mif /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/csffod.mif /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/csffod_norm.mif -mask /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/brain_mask.nii.gz -force
+ 
+done
+Starting R tracking...
+tckgen -algorithm iFOD2 -angle 50 -select 100000 -seed_image /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/thal_morphed.nii.gz -include /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/medulla_morphed.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/wmfod_norm.mif /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_thal.tck -mask /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tractography_mask.nii.gz -max_attempts_per_seed 750 -trials 750 -cutoff 0.1 -maxlength 200 -step 0.5 -nthreads 60 -force
+ 
+Starting G tracking...
+tckgen -algorithm iFOD2 -angle 50 -select 100000 -seed_image /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/DC_boundary.nii.gz -include /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/medulla_morphed.nii.gz -exclude /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/CB_morphed.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/wmfod_norm.mif /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_DC.tck -mask /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tractography_mask.nii.gz -max_attempts_per_seed 750 -trials 750 -cutoff 0.1 -maxlength 200 -step 0.5 -nthreads 60 -force
+ 
+Starting B tracking...
+tckgen -algorithm iFOD2 -angle 50 -select 100000 -seed_image /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/DC_boundary.nii.gz -include /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/CB_morphed.nii.gz -exclude /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/pons_morphed.nii.gz -exclude /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/medulla_morphed.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/wmfod_norm.mif /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_CB.tck -mask /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tractography_mask.nii.gz -max_attempts_per_seed 750 -trials 750 -cutoff 0.1 -maxlength 200 -step 0.5 -nthreads 60 -force
+ 
+Mapping streamlines to intensities...
+tckmap /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_thal.tck -template /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0.nii.gz -contrast tdi /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_thal.nii.gz -force
+ 
+tckmap /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_DC.tck -template /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0.nii.gz -contrast tdi /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_DC.nii.gz -force
+ 
+tckmap /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_CB.tck -template /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/mean_b0.nii.gz -contrast tdi /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_CB.nii.gz -force
+ 
+Histogram matching G and B channels to R channel...
+mrhistmatch linear /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_DC.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_thal.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_DC_matched.nii.gz -force
+ 
+mrhistmatch linear /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_CB.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_thal.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_CB_matched.nii.gz -force
+ 
+re-scaling intensities...
+mrcalc /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_DC_matched.nii.gz 5 -mult /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_DC_matched.nii.gz -force
+ 
+mrcalc /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_CB_matched.nii.gz 8 -mult /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_CB_matched.nii.gz -force
+ 
+Transforming into color map...
+mrcat /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_thal.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_CB_matched.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_DC_matched.nii.gz /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_concatenated.nii.gz -force
+ 
+mrgrid /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_concatenated.nii.gz regrid -voxel 1.0 /autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_concatenated_1mm.nii.gz -force
+ 
+Cropping PFM
+python -c "from trackgen.utils import crop_around_centroid; crop_around_centroid('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_concatenated_1mm.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/pons.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_concatenated_1mm_cropped.nii.gz')"
+ 
+Rescaling intensities...
+python -c "from trackgen.utils import rescale_intensities; rescale_intensities('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/tracts_concatenated_1mm_cropped.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/lowb_1mm_cropped.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/tracts_concatenated_1mm_cropped_norm.nii.gz',factor=20)"
+ 
+python -c "from trackgen.utils import rescale_intensities; rescale_intensities('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/lowb_1mm_cropped.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/lowb_1mm_cropped.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/lowb_1mm_cropped_norm.nii.gz',factor=5)"
+ 
+python -c "from trackgen.utils import rescale_intensities; rescale_intensities('/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/fa_1mm_cropped.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/temp_ae64488/lowb_1mm_cropped.nii.gz','/autofs/space/nicc_005/users/olchanyi/DiffSR/test_data/100307/BSBT_output_newnorm/fa_1mm_cropped_norm.nii.gz',factor=5)"
+ 
+All done!!

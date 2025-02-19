@@ -116,3 +116,29 @@ def tractography_mask(template_vol_path,output_path):
 
     output_img = nib.Nifti1Image(mask_vol, aff, template_vol_img.header)
     nib.save(output_img, output_path)
+
+
+def rescale_intensities(vol_path,template_vol_path,output_path,factor=5):
+    '''
+    **Almost** Z-scoring but with a scaled std
+    '''
+    vol_img = nib.load(vol_path)
+    vol = vol_img.get_fdata()
+    template_vol_img = nib.load(template_vol_path)
+    template_vol = template_vol_img.get_fdata()
+    aff = template_vol_img.affine
+
+    # Replace NaNs with zeros
+    vol = np.nan_to_num(vol, nan=0.0)
+    # Replace Infs with zeros
+    vol[np.isinf(vol)] = 0.0
+
+    vol = vol - vol.mean()
+    vol = vol/(factor*vol.std())
+    vol += 0.5
+    #clip
+    vol[vol < 0] = 0
+    vol[vol > 1] = 1
+
+    output_img = nib.Nifti1Image(vol, aff, vol_img.header)
+    nib.save(output_img, output_path)
