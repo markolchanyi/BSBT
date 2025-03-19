@@ -121,16 +121,18 @@ echo "^^^ log for intermediate files ^^^"
 # FSL/Mrtrix preprocess
 ./trackgen/fs_preprocc_extract.sh ${INTERDIR} ${LOGFILE} ${THREADS}
 
+
 # Generate the PFM
 ./trackgen/pfmgen.sh ${INTERDIR} ${LOGFILE} ${OUTPUT_DIR} ${THREADS}
 
+
 # Run the unet + CRF wrapper
-MODELFILE="/autofs/space/nicc_003/users/olchanyi/models/CRSEG_unet_models/model_shelled_attention_v10/dice_480.h5"
+MODELFILE="../model_weights/dice_480.h5"
+LABLIST="../model_weights/brainstem_wm_label_list.npy"
 OUTPUTPATH=${OUTPUT_DIR}
 LOWBFILE=${OUTPUT_DIR}/lowb_1mm_cropped_norm.nii.gz
 FAFILE=${OUTPUT_DIR}/fa_1mm_cropped_norm.nii.gz
 PFMFILE=${OUTPUT_DIR}/tracts_concatenated_1mm_cropped_norm.nii.gz
-LABLIST="../model_weights/brainstem_wm_label_list.npy"
 
 
 if [ ! -f "$LOWBFILE" ] || [ ! -s "$LOWBFILE" ]; then
@@ -148,6 +150,7 @@ if [ ! -f "$PFMFILE" ] || [ ! -s "$PFMFILE" ]; then
     exit 1
 fi
 
+
 python ./unet_scripts/unet_wm_predict.py \
         --model_file ${MODELFILE} \
         --output_path ${OUTPUTPATH} \
@@ -155,6 +158,7 @@ python ./unet_scripts/unet_wm_predict.py \
         --fa_file ${FAFILE} \
         --tract_file ${PFMFILE} \
         --label_list_path ${LABLIST}
+
 
 echo "All done!!"
 
