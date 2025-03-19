@@ -29,7 +29,7 @@ sh ./reassemble_weights.sh
 Once all dependencies are set up, you can run BSBT through the main shell script:
 
 ```bash
-cd BSBT
+cd ./BSBT
 sh ./run_BSBT.sh 
    --dwi </path/to/dwi_volume>
    --bvals </path/to/bvals_file>
@@ -37,3 +37,16 @@ sh ./run_BSBT.sh
    --out </path/to/output_directory>
    --threads <number of threads>
 ```
+
+>[!NOTE]
+> Our CNN weights in this repo are stored with Git LFS (Large File Storage). Some users (particularly those who do not have Git GUI installed) may need to install Git LFS prior to cloning the repo in order to download the weights.
+>To do this, run:
+>```bash
+># Linux (Debian/Ubuntu)
+>sudo apt-get update && sudo apt-get install git-lfs
+>
+># macOS (Homebrew)
+>brew install git-lfs
+># Or download directly from https://git-lfs.github.com/
+># Then:
+>git lfs install
