@@ -124,5 +124,37 @@ echo "^^^ log for intermediate files ^^^"
 # Generate the PFM
 ./trackgen/pfmgen.sh ${INTERDIR} ${LOGFILE} ${OUTPUT_DIR} ${THREADS}
 
+# Run the unet + CRF wrapper
+MODELFILE="/autofs/space/nicc_003/users/olchanyi/models/CRSEG_unet_models/model_shelled_attention_v10/dice_480.h5"
+OUTPUTPATH=${OUTPUT_DIR}
+LOWBFILE=${OUTPUT_DIR}/lowb_1mm_cropped_norm.nii.gz
+FAFILE=${OUTPUT_DIR}/fa_1mm_cropped_norm.nii.gz
+PFMFILE=${OUTPUT_DIR}/tracts_concatenated_1mm_cropped_norm.nii.gz
+LABLIST="../model_weights/brainstem_wm_label_list.npy"
+
+
+if [ ! -f "$LOWBFILE" ] || [ ! -s "$LOWBFILE" ]; then
+    echo "${LOWBFILE} either doesn't exist or is empty."
+    exit 1
+fi
+
+if [ ! -f "$FAFILE" ] || [ ! -s "$FAFILE" ]; then
+    echo "${FAFILE} either doesn't exist or is empty."
+    exit 1
+fi
+
+if [ ! -f "$PFMFILE" ] || [ ! -s "$PFMFILE" ]; then
+    echo "${PFMFILE} either doesn't exist or is empty."
+    exit 1
+fi
+
+python ./unet_scripts/unet_wm_predict.py \
+        --model_file ${MODELFILE} \
+        --output_path ${OUTPUTPATH} \
+        --lowb_file ${LOWBFILE} \
+        --fa_file ${FAFILE} \
+        --tract_file ${PFMFILE} \
+        --label_list_path ${LABLIST}
+
 echo "All done!!"
 
