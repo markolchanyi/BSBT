@@ -22,7 +22,7 @@ The CNN model weights file is too large to include as a single file, so it is sp
 
 ```bash
 sh ./reassemble_weights.sh
-
+```
 
 ### Running BSBT
 
@@ -36,3 +36,4 @@ sh ./run_BSBT.sh
    --bvecs </path/to/bvecs_file>
    --out </path/to/output_directory>
    --threads <number of threads>
+```
